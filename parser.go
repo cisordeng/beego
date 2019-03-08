@@ -30,16 +30,16 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/astaxie/beego/context/param"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/utils"
+	"github.com/cisordeng/beego/context/param"
+	"github.com/cisordeng/beego/logs"
+	"github.com/cisordeng/beego/utils"
 )
 
 var globalRouterTemplate = `package routers
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context/param"{{.globalimport}}
+	"github.com/cisordeng/beego"
+	"github.com/cisordeng/beego/context/param"{{.globalimport}}
 )
 
 func init() {

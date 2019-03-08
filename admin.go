@@ -24,10 +24,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/astaxie/beego/grace"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/toolbox"
-	"github.com/astaxie/beego/utils"
+	"github.com/cisordeng/beego/grace"
+	"github.com/cisordeng/beego/logs"
+	"github.com/cisordeng/beego/toolbox"
+	"github.com/cisordeng/beego/utils"
 )
 
 // BeeAdminApp is the default adminApp used by admin module.
@@ -43,7 +43,7 @@ var beeAdminApp *adminApp
 //	 	if t.Nanoseconds() < 100 {
 //			return false
 //	 	}
-//	 	if strings.HasPrefix(requestPath, "/astaxie") {
+//	 	if strings.HasPrefix(requestPath, "/cisordeng") {
 //			return false
 //	 	}
 //	 	return true

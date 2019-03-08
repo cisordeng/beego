@@ -15,9 +15,9 @@
 package authz
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
-	"github.com/astaxie/beego/plugins/auth"
+	"github.com/cisordeng/beego"
+	"github.com/cisordeng/beego/context"
+	"github.com/cisordeng/beego/plugins/auth"
 	"github.com/casbin/casbin"
 	"net/http"
 	"net/http/httptest"
