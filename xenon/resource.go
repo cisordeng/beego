@@ -1,8 +1,10 @@
 package xenon
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cisordeng/beego"
+	"net/http"
 )
 
 var Resources []RestResourceInterface
@@ -11,7 +13,7 @@ type Map map[string]interface{}
 
 type RestResource struct {
 	beego.Controller
-	Error *Error
+	BCtx BCtx
 }
 
 type RestResourceInterface interface {
@@ -20,7 +22,10 @@ type RestResourceInterface interface {
 	Params() map[string][]string
 }
 
-
+type BCtx struct {
+	Req *http.Request
+	Errors []Error
+}
 
 type Error struct {
 	Business *BusinessError
@@ -57,11 +62,7 @@ func (r *RestResource) CheckParams () {
 			actualParams := r.Input()
 			for _, param := range params {
 				if _, ok := actualParams[param]; !ok {
-					r.Error.Business = &BusinessError{
-						"rest:missing_argument",
-						fmt.Sprintf("missing or invalid argument: %s", param),
-					}
-					r.ReturnJSON(nil)
+					r.BCtx.Errors = append(r.BCtx.Errors, Error{NewBusinessError("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s]", param)), errors.New("missing param")})
 					return
 				}
 			}
@@ -70,7 +71,15 @@ func (r *RestResource) CheckParams () {
 }
 
 func (r *RestResource) Prepare() {
+	r.BCtx.Req = r.Ctx.Input.Context.Request
 	r.CheckParams()
+}
+
+func NewBusinessError(ErrCode string, ErrMsg string) *BusinessError {
+	return &BusinessError{
+		ErrCode: ErrCode,
+		ErrMsg: ErrMsg,
+	}
 }
 
 func (r *RestResource) MakeResponse(data Map) *Response {
@@ -81,13 +90,16 @@ func (r *RestResource) MakeResponse(data Map) *Response {
 		"",
 		"",
 	}
-	if r.Error != nil {
-		response = &Response{ // 指针引用
-			500,
-			"",
-			r.Error.Business.ErrCode,
-			r.Error.Business.ErrMsg,
-			r.Error.Inner.Error(),
+	for _, Error := range r.BCtx.Errors {
+		if Error.Inner != nil {
+			response = &Response{ // 指针引用
+				500,
+				"",
+				Error.Business.ErrCode,
+				Error.Business.ErrMsg,
+				Error.Inner.Error(),
+			}
+			return response
 		}
 	}
 	return response
