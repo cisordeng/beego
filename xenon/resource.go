@@ -45,6 +45,10 @@ type Response struct {
 	InnerErrMsg string 		`json:"innerErrMsg"`
 }
 
+func RegisterResource(resourceInterface RestResourceInterface) {
+	Resources = append(Resources, resourceInterface)
+}
+
 func (r *RestResource) Resource() string {
 	return ""
 }
