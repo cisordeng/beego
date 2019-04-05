@@ -146,7 +146,9 @@ type QuerySeter interface {
 	//	Filter("profile__Age", 28)
 	// 	 // time compare
 	//	qs.Filter("created", time.Now())
-	Filter(string, ...interface{}) QuerySeter
+	Filter(interface{}, ...interface{}) QuerySeter
+	// add multiple condition expressions to QuerySeter.
+	//FilterMap(map[string]interface{}) QuerySeter
 	// add raw sql to querySeter.
 	// for example:
 	// qs.FilterRaw("user_id IN (SELECT id FROM profile WHERE age>=18)")

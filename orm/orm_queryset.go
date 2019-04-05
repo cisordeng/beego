@@ -74,11 +74,20 @@ type querySet struct {
 var _ QuerySeter = new(querySet)
 
 // add condition expression to QuerySeter.
-func (o querySet) Filter(expr string, args ...interface{}) QuerySeter {
+func (o querySet) Filter(query interface{}, args ...interface{}) QuerySeter {
 	if o.cond == nil {
 		o.cond = NewCondition()
 	}
-	o.cond = o.cond.And(expr, args...)
+
+	if len(args) > 0 {
+		expr := query.(string)
+		o.cond = o.cond.And(expr, args...)
+	} else {
+		conditions := query.(map[string]interface{})
+		for k, v := range conditions {
+			o.cond = o.cond.And(k, v)
+		}
+	}
 	return &o
 }
 

@@ -197,9 +197,9 @@ func getDbCreateSQL(al *alias) (sqls []string, tableIndexes map[string][]dbIndex
 			if strings.Contains(column, "%COL%") {
 				column = strings.Replace(column, "%COL%", fi.column, -1)
 			}
-			
+
 			if fi.description != "" {
-				column += " " + fmt.Sprintf("COMMENT '%s'",fi.description)
+				column += " " + fmt.Sprintf("COMMENT '%s'", fi.description)
 			}
 
 			columns = append(columns, column)
@@ -289,7 +289,12 @@ func getColumnDefault(fi *fieldInfo) string {
 	// These defaults will be useful if there no config value orm:"default" and NOT NULL is on
 	switch fi.fieldType {
 	case TypeTimeField, TypeDateField, TypeDateTimeField, TypeTextField:
-		return v
+		if fi.autoNowAdd {
+			t = " DEFAULT %s "
+			d = "now()"
+		} else {
+			return v
+		}
 
 	case TypeBitField, TypeSmallIntegerField, TypeIntegerField,
 		TypeBigIntegerField, TypePositiveBitField, TypePositiveSmallIntegerField,
