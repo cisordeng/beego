@@ -30,7 +30,7 @@ import (
 	"github.com/cisordeng/beego/grace"
 	"github.com/cisordeng/beego/logs"
 	"github.com/cisordeng/beego/utils"
-	"golang.org/x/crypto/acme/autocert"
+	"github.com/golang/x/crypto/acme/autocert"
 )
 
 var (
