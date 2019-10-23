@@ -1,7 +1,6 @@
 package xenon
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
