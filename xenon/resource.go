@@ -51,8 +51,7 @@ func (r *RestResource) CheckParams() {
 			actualParams := r.Input()
 			for _, param := range params {
 				if _, ok := actualParams[param]; !ok {
-					r.bCtx.Errors = append(r.bCtx.Errors, Error{NewBusinessError("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s]", param)), errors.New("missing param")})
-					return
+					panic(NewBusinessError("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s]", param)))
 				}
 			}
 		}
