@@ -53,6 +53,10 @@ func (r *RestResource) GetUserFromToken(user interface{}) {
 func (r *RestResource) encodeURIComponent() string {
 	replaceMap := map[string]string{
 		"+": "%20",
+		"%27": "'",
+		"%28": "(",
+		"%29": ")",
+		"%21": "!",
 	}
 	temp1 := r.Input().Encode()
 	temp2 := ""
