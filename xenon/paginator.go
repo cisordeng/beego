@@ -59,7 +59,7 @@ func (page *Paginator) curPage() int {
 }
 
 func (page *Paginator) maxPage() int {
-	return int(math.Ceil(float64(page.totalCount / page.CountPerPage)))
+	return int(math.Ceil(float64(page.totalCount) / float64(page.CountPerPage)))
 }
 
 func (page *Paginator) hasPrev() bool {
