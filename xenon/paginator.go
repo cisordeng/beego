@@ -94,7 +94,7 @@ func (page *PageInfo) ToMap() Map {
 	}
 }
 
-func Paginate(qs orm.QuerySeter, page *Paginator, models interface{}) (PageInfo, err0r)  {
+func Paginate(qs orm.QuerySeter, page *Paginator, models interface{}) (PageInfo, error)  {
 	page.init(qs)
 	_, err := qs.Limit(
 		page.CountPerPage,
