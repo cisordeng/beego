@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/cisordeng/beego"
 )
@@ -48,10 +49,18 @@ func request(method string, service string, resource string, data Map, apiUrls .
 		case float64:
 			value = fmt.Sprintf("%f", v)
 		default:
-			beego.Warn("unknown type: ", t)
+			beego.Notice("json marshal type: ", t)
+			bytes, err := json.Marshal(v)
+			PanicNotNilError(err)
+			value = string(bytes)
 		}
 		params.Set(k, value)
 	}
+	timestamp := time.Now().Unix()
+	params.Set("timestamp", fmt.Sprintf("%d", timestamp))
+	var signSecret = beego.AppConfig.String("api::signSecret")
+	sign := strings.ToLower(EncodeMD5(signSecret + params.Encode()))
+	params.Set("sign", sign)
 
 	requestUrl := fmt.Sprintf("%s%s/%s/?%s", apiUrl, service, strings.Replace(resource, ".", "/", -1), params.Encode())
 	beego.Notice(fmt.Sprintf("request url: %s %s", requestUrl, method))
@@ -65,7 +74,9 @@ func request(method string, service string, resource string, data Map, apiUrls .
 	PanicNotNilError(err)
 	resMap := Map{}
 	err = json.Unmarshal(bytes, &resMap)
-	beego.Info(string(bytes))
 	PanicNotNilError(err)
+	if int(resMap["code"].(float64)) != 200 {
+		RaiseException(resMap["errCode"].(string), resMap["errMsg"].(string))
+	}
 	return resMap
 }
