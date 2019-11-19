@@ -64,6 +64,11 @@ func (r *RestResource) GetFilters() Map {
 	return filters
 }
 
+func (r *RestResource) GetOrders() []string {
+	orders := r.GetStrings("orders", []string{})
+	return orders
+}
+
 func (r *RestResource) encodeURIComponent() string {
 	replaceMap := map[string]string{
 		"+": "%20",
