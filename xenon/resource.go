@@ -54,7 +54,7 @@ func (r *RestResource) GetMap(key string) Map {
 	strM := r.GetString(key, "{}")
 	m := Map{}
 	err := json.Unmarshal([]byte(strM), &m)
-	PanicNotNilError(err, "type error", fmt.Sprintf("[%s] is not json", key))
+	PanicNotNilError(err, "rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s](%s)", key, "map"))
 	return m
 }
 
@@ -72,7 +72,7 @@ func (r *RestResource) GetSlice(key string) []interface{} {
 		return s
 	}
 	err := json.Unmarshal([]byte(strS), &s)
-	PanicNotNilError(err, "type error", fmt.Sprintf("[%s] is not slice", key))
+	PanicNotNilError(err, "rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s](%s)", key, "slice"))
 	return s
 }
 
@@ -161,8 +161,38 @@ func (r *RestResource) checkParams() {
 			}
 
 			for _, param := range params {
-				if _, ok := actualParams[param]; !ok {
-					RaiseException("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s]", param))
+				paramStrs := strings.Split(param, ":")
+				paramCode := paramStrs[0]
+				canMissParam := false
+				if paramCode[0] == '?' {
+					paramCode = paramCode[1:]
+					canMissParam = true
+				}
+				if _, ok := actualParams[paramCode]; !ok {
+					if !canMissParam {
+						RaiseException("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s]", paramCode))
+					}
+				} else {
+					if len(paramStrs) > 1 {
+						paramType := paramStrs[1]
+						var err error = nil
+						switch paramType {
+						case "string":
+						case "int":
+							_, err = r.GetInt(paramCode)
+						case "float":
+							_, err = r.GetFloat(paramCode)
+						case "bool":
+							_, err = r.GetBool(paramCode)
+						case "map":
+							r.GetMap(paramCode)
+						case "slice":
+							r.GetSlice(paramCode)
+						default:
+							beego.Warn(fmt.Sprintf("unset type %s", paramType))
+						}
+						PanicNotNilError(err, "rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s](%s)", paramCode, paramType))
+					}
 				}
 			}
 		}
@@ -200,21 +230,16 @@ func (r *RestResource) mergeParams() {
 			switch t := v.(type) {
 			case string:
 				strV = fmt.Sprintf("%s", v.(string))
-				break
 			case int:
 				strV = fmt.Sprintf("%d", v.(int))
-				break
 			case float64:
 				strV = fmt.Sprintf("%g", v.(float64))
-				break
 			case Map:
 				bytes, _ := json.Marshal(v.(Map))
 				strV = string(bytes)
-				break
 			case []interface{}:
 				bytes, _ := json.Marshal(v.([]interface{}))
 				strV = string(bytes)
-				break
 			default:
 				beego.Warn(fmt.Sprintf("unknown type %t", t))
 			}
