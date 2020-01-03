@@ -188,6 +188,10 @@ func (r *RestResource) checkValidToken() {
 }
 
 func (r *RestResource) Prepare() {
+	token := r.Ctx.GetCookie("token")
+	if token != "" {
+		r.Input().Set("token", token)
+	}
 	r.checkValidSign()
 	r.checkParams()
 	r.checkValidToken()
