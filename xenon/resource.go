@@ -188,6 +188,8 @@ func (r *RestResource) checkParams() {
 							r.GetMap(paramCode)
 						case "slice":
 							r.GetSlice(paramCode)
+						case "file":
+							_, _, err = r.GetFile(paramCode)
 						default:
 							beego.Warn(fmt.Sprintf("unset type %s", paramType))
 						}
