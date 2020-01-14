@@ -1,6 +1,7 @@
 package xenon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cisordeng/beego"
+	"github.com/cisordeng/beego/orm"
 )
 
 var Resources []RestResourceInterface
@@ -23,6 +25,7 @@ type RestResourceInterface interface {
 	beego.ControllerInterface
 	Resource() string
 	Params() map[string][]string
+	DisableTx() bool
 }
 
 func RegisterResource(resourceInterface RestResourceInterface) {
@@ -37,6 +40,13 @@ func (r *RestResource) Params() map[string][]string {
 	return nil
 }
 
+func (r *RestResource) DisableTx() bool {
+	if r.Ctx.Request.Method == "GET" {
+		return true
+	} else {
+		return false
+	}
+}
 
 func (r *RestResource) GetUserFromToken(user interface{}) {
 	actualParams := r.Input()
@@ -252,11 +262,62 @@ func (r *RestResource) mergeParams() {
 	}
 }
 
+func (r *RestResource) setBusinessContext() {
+	bContext := context.Background()
+	bContext = context.WithValue(bContext, "orm", orm.NewOrm())
+	r.Ctx.Input.SetData("bContext", bContext)
+}
+
+func (r *RestResource) GetBusinessContext() context.Context {
+	if r.Ctx.Input.GetData("bContext") == nil {
+		r.setBusinessContext()
+	}
+	return r.Ctx.Input.GetData("bContext").(context.Context)
+}
+
+func (r *RestResource) beginTx() {
+	app := r.AppController.(RestResourceInterface)
+
+	ctx := r.GetBusinessContext()
+	o := GetOrmFromContext(ctx)
+	if o != nil {
+		r.Ctx.Input.SetData("disableTx", app.DisableTx())
+		if !app.DisableTx() {
+			err := o.Begin()
+			beego.Debug("[ORM] start transaction")
+			if err != nil {
+				beego.Error(err)
+			}
+		}
+	}
+}
+
+func (r *RestResource) commitTx() {
+	app := r.AppController.(RestResourceInterface)
+
+	ctx := r.GetBusinessContext()
+	o := GetOrmFromContext(ctx)
+	if o != nil {
+		if !app.DisableTx() {
+			err := o.Commit()
+			beego.Debug("[ORM] commit transaction")
+			if err != nil {
+				beego.Error(err)
+			}
+		}
+	}
+}
+
 func (r *RestResource) Prepare() {
-	r.mergeParams()
+	r.mergeParams() // merge params
 	r.checkValidSign()
 	r.checkParams()
 	r.checkValidToken()
+	r.beginTx()
+}
+
+func (r *RestResource) Finish() {
+	r.commitTx()
 }
 
 func RegisterResources() {
