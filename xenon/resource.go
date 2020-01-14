@@ -263,12 +263,20 @@ func (r *RestResource) mergeParams() {
 }
 
 func (r *RestResource) setBusinessContext() {
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return
+	}
 	bContext := context.Background()
 	bContext = context.WithValue(bContext, "orm", orm.NewOrm())
 	r.Ctx.Input.SetData("bContext", bContext)
 }
 
 func (r *RestResource) GetBusinessContext() context.Context {
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return nil
+	}
 	if r.Ctx.Input.GetData("bContext") == nil {
 		r.setBusinessContext()
 	}
@@ -276,6 +284,10 @@ func (r *RestResource) GetBusinessContext() context.Context {
 }
 
 func (r *RestResource) beginTx() {
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return
+	}
 	app := r.AppController.(RestResourceInterface)
 
 	ctx := r.GetBusinessContext()
@@ -293,6 +305,10 @@ func (r *RestResource) beginTx() {
 }
 
 func (r *RestResource) commitTx() {
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return
+	}
 	app := r.AppController.(RestResourceInterface)
 
 	ctx := r.GetBusinessContext()

@@ -12,6 +12,10 @@ import (
 )
 
 func rollBackTx(ctx *beegoContext.Context) {
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return
+	}
 	if ctx.Input.GetData("bContext") != nil {
 		if bCtx, ok := ctx.Input.GetData("bContext").(context.Context); ok {
 			o := GetOrmFromContext(bCtx)
