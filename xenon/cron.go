@@ -17,13 +17,23 @@ type CronTask struct {
 	Name string
 	Spec string
 	Func func(ctx context.Context)
+	EnableTx bool
 }
 
-func newCronTask(name string, spec string, f func(ctx context.Context)) *CronTask {
+func newCronTask(name string, spec string, f func(ctx context.Context), enableTx ...bool) *CronTask {
+	enable := true
+	if len(enableTx) > 0 {
+		enable = enableTx[0]
+	}
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		enable = false
+	}
 	return &CronTask{
 		Name: name,
 		Spec: spec,
 		Func: f,
+		EnableTx: enable,
 	}
 }
 
@@ -38,11 +48,21 @@ func newContextWithOrm() context.Context {
 }
 
 func (this *CronTask) start() {
+	bCtx := newContextWithOrm()
+
 	f := func() (err error) {
 		defer func() {
 			if err := recover(); err != nil {
-				beego.Error(fmt.Sprintf("cron:task [%s] is error", this.Name))
+				beego.Error(fmt.Sprintf("cron: task [%s] is error", this.Name))
 				beego.Error(err)
+				if this.EnableTx {
+					o := GetOrmFromContext(bCtx)
+					e := o.Rollback()
+					beego.Warn("[ORM] rollback transaction")
+					if e != nil {
+						beego.Error(e)
+					}
+				}
 
 				msg := make([]string, 0)
 				for i := 1; ; i++ {
@@ -59,10 +79,25 @@ func (this *CronTask) start() {
 			}
 		}()
 
-		beego.Notice(fmt.Sprintf("cron:task [%s] is start", this.Name))
-		bCtx := newContextWithOrm()
+		beego.Notice(fmt.Sprintf("cron: task [%s] is start", this.Name))
+		if this.EnableTx {
+			o := GetOrmFromContext(bCtx)
+			e := o.Begin()
+			beego.Debug("[ORM] begin transaction")
+			if e != nil {
+				beego.Error(e)
+			}
+		}
 		this.Func(bCtx)
-		beego.Notice(fmt.Sprintf("cron:task [%s] is end", this.Name))
+		if this.EnableTx {
+			o := GetOrmFromContext(bCtx)
+			e := o.Commit()
+			beego.Debug("[ORM] commit transaction")
+			if e != nil {
+				beego.Error(e)
+			}
+		}
+		beego.Notice(fmt.Sprintf("cron: task [%s] is end", this.Name))
 		return err
 	}
 	task := toolbox.NewTask(this.Name, this.Spec, f)
@@ -72,8 +107,8 @@ func (this *CronTask) start() {
 
 var CronTasks []*CronTask
 
-func RegisterCronTask(taskName string, taskSpec string, taskFunc func(ctx context.Context)) {
-	task := newCronTask(taskName, taskSpec, taskFunc)
+func RegisterCronTask(taskName string, taskSpec string, taskFunc func(ctx context.Context), enableTx ...bool) {
+	task := newCronTask(taskName, taskSpec, taskFunc, enableTx...)
 	CronTasks = append(CronTasks, task)
 }
 
