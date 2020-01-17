@@ -7,11 +7,9 @@ import (
 
 func Run() {
 
-	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
-	if dbUsed {
-		RegisterModels()
-	}
+	RegisterModels()
 	RegisterResources()
+	RegisterCronTasks()
 
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
 		AllowAllOrigins:  true,

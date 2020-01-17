@@ -12,6 +12,12 @@ func init() {
 }
 
 func RegisterModels() {
+
+	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
+	if !dbUsed {
+		return
+	}
+
 	// set default database
 	maxIdle := 30
 	maxConn := 100
