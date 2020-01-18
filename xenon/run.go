@@ -5,9 +5,13 @@ import (
 	"github.com/cisordeng/beego/plugins/cors"
 )
 
-func Run() {
-
+func Run(args []string) {
 	RegisterModels()
+	if len(args) > 1 {
+		fileName := args[1]
+		RunCmd(fileName)
+		return
+	}
 	RegisterResources()
 	RegisterCronTasks()
 

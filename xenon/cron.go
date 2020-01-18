@@ -7,7 +7,6 @@ import (
 
 	"github.com/cisordeng/beego"
 	"github.com/cisordeng/beego/logs"
-	"github.com/cisordeng/beego/orm"
 	"github.com/cisordeng/beego/toolbox"
 )
 
@@ -35,16 +34,6 @@ func newCronTask(name string, spec string, f func(ctx context.Context), enableTx
 		Func: f,
 		EnableTx: enable,
 	}
-}
-
-func newContextWithOrm() context.Context {
-	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
-	if !dbUsed {
-		return nil
-	}
-	bContext := context.Background()
-	bContext = context.WithValue(bContext, "orm", orm.NewOrm())
-	return bContext
 }
 
 func (this *CronTask) start() {
