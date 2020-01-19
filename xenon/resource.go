@@ -185,6 +185,13 @@ func (r *RestResource) checkParams() {
 				} else {
 					if len(paramStrs) > 1 {
 						paramType := paramStrs[1]
+						if paramCode == "token" {
+							userMap := make(map[string]interface{}, 0)
+							r.GetUserFromToken(&userMap)
+							if userMap["type"] != paramType {
+								RaiseException("rest:missing_argument", fmt.Sprintf("missing or invalid argument: [%s](%s)", paramCode, paramType))
+							}
+						}
 						var err error = nil
 						switch paramType {
 						case "string":
