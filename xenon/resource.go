@@ -224,7 +224,23 @@ func (r *RestResource) checkValidToken() {
 	actualParams := r.Input()
 	token := actualParams.Get("token")
 	user := make(map[string]interface{}, 0)
-	if token != "" {
+
+	needToken := false
+	method := r.Ctx.Input.Method()
+	app := r.AppController.(RestResourceInterface)
+	method2params := app.Params()
+	for _, param := range method2params[method] {
+		paramStrs := strings.Split(param, ":")
+		paramCode := paramStrs[0]
+		if paramCode[0] == '?' {
+			paramCode = paramCode[1:]
+		}
+		if paramCode == "token" {
+			needToken = true
+		}
+	}
+
+	if needToken && token != "" {
 		commonKey := beego.AppConfig.String("api::aesCommonKey")
 		decodedToken, err := DecodeAesWithCommonKey(token, commonKey)
 		PanicNotNilError(err, "rest:invalid token", fmt.Sprintf("[%s] is invalid token", token))
