@@ -271,6 +271,8 @@ func (r *RestResource) mergeParams() {
 				strV = fmt.Sprintf("%d", v.(int))
 			case float64:
 				strV = fmt.Sprintf("%g", v.(float64))
+			case bool:
+				strV = fmt.Sprintf("%t", v.(bool))
 			case Map:
 				bytes, _ := json.Marshal(v.(Map))
 				strV = string(bytes)
