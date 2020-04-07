@@ -24,3 +24,8 @@ func (r *RestResource) ReturnJSON(data Map) {
 	r.Data["json"] = response
 	r.ServeJSON()
 }
+
+func (r *RestResource) ReturnBody(bytes []byte) {
+	err := r.Ctx.Output.Body(bytes)
+	PanicNotNilError(err)
+}
