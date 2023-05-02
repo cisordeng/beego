@@ -253,7 +253,14 @@ func (r *RestResource) checkValidToken() {
 }
 
 func (r *RestResource) mergeParams() {
-	token := r.Ctx.GetCookie("token")
+	// get token from cookie
+	token := r.Ctx.GetCookie("Authorization")
+	if token != "" {
+		r.Input().Set("token", token)
+	}
+
+	// get token from header
+	token = r.Ctx.Request.Header.Get("Authorization")
 	if token != "" {
 		r.Input().Set("token", token)
 	}
