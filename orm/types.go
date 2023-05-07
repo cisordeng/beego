@@ -156,7 +156,7 @@ type QuerySeter interface {
 	FilterRaw(string, string) QuerySeter
 	// add NOT condition to querySeter.
 	// have the same usage as Filter
-	Exclude(string, ...interface{}) QuerySeter
+	Exclude(interface{}, ...interface{}) QuerySeter
 	// set condition to QuerySeter.
 	// sql's where condition
 	//	cond := orm.NewCondition()
@@ -452,7 +452,7 @@ type dbBaser interface {
 	DeleteBatch(dbQuerier, *querySet, *modelInfo, *Condition, *time.Location) (int64, error)
 	Count(dbQuerier, *querySet, *modelInfo, *Condition, *time.Location) (int64, error)
 	OperatorSQL(string) string
-	GenerateOperatorSQL(*modelInfo, *fieldInfo, string, []interface{}, *time.Location) (string, []interface{}, bool)
+	GenerateOperatorSQL(*modelInfo, *fieldInfo, string, []interface{}, *time.Location) (string, []interface{})
 	GenerateOperatorLeftCol(*fieldInfo, string, *string)
 	PrepareInsert(dbQuerier, *modelInfo) (stmtQuerier, string, error)
 	ReadValues(dbQuerier, *querySet, *modelInfo, *Condition, []string, interface{}, *time.Location) (int64, error)

@@ -335,24 +335,23 @@ func (t *dbTables) getCondSQL(cond *Condition, sub bool, tz *time.Location) (whe
 
 	mi := t.mi
 
-	for _, p := range cond.params {
-		wh := ""
-		if where != "" {
+	for i, p := range cond.params {
+		if i > 0 {
 			if p.isOr {
-				wh += "OR "
+				where += "OR "
 			} else {
-				wh += "AND "
+				where += "AND "
 			}
 		}
 		if p.isNot {
-			wh += "NOT "
+			where += "NOT "
 		}
 		if p.isCond {
 			w, ps := t.getCondSQL(p.cond, true, tz)
 			if w != "" {
 				w = fmt.Sprintf("( %s) ", w)
 			}
-			wh += w
+			where += w
 			params = append(params, ps...)
 		} else {
 			exprs := p.exprs
@@ -375,20 +374,22 @@ func (t *dbTables) getCondSQL(cond *Condition, sub bool, tz *time.Location) (whe
 
 			var operSQL string
 			var args []interface{}
-			var empty bool
 			if p.isRaw {
 				operSQL = p.sql
 			} else {
-				operSQL, args, empty = t.base.GenerateOperatorSQL(mi, fi, operator, p.args, tz)
+				operSQL, args = t.base.GenerateOperatorSQL(mi, fi, operator, p.args, tz)
 			}
 			leftCol := fmt.Sprintf("%s.%s%s%s", index, Q, fi.column, Q)
 
 			t.base.GenerateOperatorLeftCol(fi, operator, &leftCol)
 
-			if !empty {
-				where += wh + fmt.Sprintf("%s %s ", leftCol, operSQL)
-				params = append(params, args...)
+			if operSQL == "" {
+				where += "false "
+			} else {
+				where += fmt.Sprintf("%s %s ", leftCol, operSQL)
 			}
+			params = append(params, args...)
+
 		}
 	}
 

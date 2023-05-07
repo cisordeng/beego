@@ -1140,13 +1140,13 @@ func (d *dbBase) Count(q dbQuerier, qs *querySet, mi *modelInfo, cond *Condition
 }
 
 // generate sql with replacing operator string placeholders and replaced values.
-func (d *dbBase) GenerateOperatorSQL(mi *modelInfo, fi *fieldInfo, operator string, args []interface{}, tz *time.Location) (string, []interface{}, bool) {
+func (d *dbBase) GenerateOperatorSQL(mi *modelInfo, fi *fieldInfo, operator string, args []interface{}, tz *time.Location) (string, []interface{}) {
 	var sql string
 	params := getFlatParams(fi, args, tz)
 
 	if len(params) == 0 {
 		//panic(fmt.Errorf("operator `%s` need at least one args", operator))
-		return "", nil, true
+		return "", nil
 	}
 	arg := params[0]
 
@@ -1197,7 +1197,7 @@ func (d *dbBase) GenerateOperatorSQL(mi *modelInfo, fi *fieldInfo, operator stri
 			}
 		}
 	}
-	return sql, params, false
+	return sql, params
 }
 
 // gernerate sql string with inner function, such as UPPER(text).

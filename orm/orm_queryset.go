@@ -101,11 +101,20 @@ func (o querySet) FilterRaw(expr string, sql string) QuerySeter {
 }
 
 // add NOT condition to querySeter.
-func (o querySet) Exclude(expr string, args ...interface{}) QuerySeter {
+func (o querySet) Exclude(query interface{}, args ...interface{}) QuerySeter {
 	if o.cond == nil {
 		o.cond = NewCondition()
 	}
-	o.cond = o.cond.AndNot(expr, args...)
+
+	if len(args) > 0 {
+		expr := query.(string)
+		o.cond = o.cond.AndNot(expr, args...)
+	} else {
+		conditions := query.(map[string]interface{})
+		for k, v := range conditions {
+			o.cond = o.cond.AndNot(k, v)
+		}
+	}
 	return &o
 }
 
