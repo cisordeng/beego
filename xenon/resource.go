@@ -97,6 +97,11 @@ func (r *RestResource) GetFilters() Map {
 	return filters
 }
 
+func (r *RestResource) GetExcludes() Map {
+	excludes := r.GetMap("excludes")
+	return excludes
+}
+
 func (r *RestResource) GetOrders() []string {
 	orders := r.GetStrings("orders", []string{})
 	return orders
@@ -370,7 +375,7 @@ func (r *RestResource) Finish() {
 
 func RegisterResources() {
 	for _, resource := range Resources {
-		beego.Info("+resource: "+resource.Resource(), resource.Params())
+		beego.Info("register resource: "+resource.Resource(), resource.Params())
 		beego.Router(strings.Replace(resource.Resource(), ".", "/", -1), resource)
 	}
 }
