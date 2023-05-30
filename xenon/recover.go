@@ -57,7 +57,7 @@ func RecoverPanic(ctx *beegoContext.Context) {
 		var shortMsg []string
 		for _, m := range msg {
 			logs.Critical(m)
-			shortMsg = append(shortMsg, strings.ReplaceAll(m, "\\", "/")[len(os.Getenv("GOPATH"))+5:])
+			shortMsg = append(shortMsg, strings.Replace(m, "\\", "/", -1)[len(os.Getenv("GOPATH"))+5:])
 		}
 
 		var resp Map
