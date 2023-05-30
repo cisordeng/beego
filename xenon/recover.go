@@ -3,8 +3,9 @@ package xenon
 import (
 	"context"
 	"fmt"
-	"strings"
+	"os"
 	"runtime"
+	"strings"
 
 	"github.com/cisordeng/beego"
 	beegoContext "github.com/cisordeng/beego/context"
@@ -53,13 +54,15 @@ func RecoverPanic(ctx *beegoContext.Context) {
 			msg = append(msg, fmt.Sprintf("%s:%d", file, line))
 		}
 		msg = msg[3:len(msg) - 4]
+		var shortMsg []string
 		for _, m := range msg {
 			logs.Critical(m)
+			shortMsg = append(shortMsg, strings.ReplaceAll(m, "\\", "/")[len(os.Getenv("GOPATH"))+5:])
 		}
 
 		var resp Map
 		if e, ok := err.(Error); ok {
-			innerErrMsg = e.InnerErr.Error() + ";" + strings.Join(msg, ";")
+			innerErrMsg = e.InnerErr.Error() + ";" + strings.Join(shortMsg, ";")
 			resp = Map{
 				"code":        531,
 				"data":        "",
