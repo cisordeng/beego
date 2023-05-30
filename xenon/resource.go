@@ -148,7 +148,8 @@ func (r *RestResource) checkValidSign() {
 
 	actualParams.Del("sign")
 	unencryptedStr := signSecret + r.encodeURIComponent()
-	t := time.Unix(0, timestamp * 1e6)
+	allowableTimeErrorSeconds := int64(1)
+	t := time.Unix(0, (timestamp * 1e6) - (allowableTimeErrorSeconds * 1e9))
 	if time.Now().Before(t) || time.Now().Sub(t) > time.Duration(signEffectiveSeconds * 1000000000) { // 签名有效时间15s
 		RaiseException("rest:request expired", fmt.Sprintf("at [%s] request expired", sign))
 	} else {
