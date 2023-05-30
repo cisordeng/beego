@@ -118,7 +118,7 @@ func request(method string, service string, resource string, data Map, apiUrls .
 		}
 		params.Set(k, value)
 	}
-	timestamp := time.Now().UnixMilli()
+	timestamp := time.Now().UnixNano() / 1e6
 	params.Set("timestamp", fmt.Sprintf("%d", timestamp))
 	var signSecret = beego.AppConfig.String("api::signSecret")
 	sign := strings.ToLower(EncodeMD5(signSecret + params.Encode()))
