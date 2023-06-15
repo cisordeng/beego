@@ -153,7 +153,9 @@ func (r *RestResource) checkValidSign() {
 	if time.Now().Before(t) || time.Now().Sub(t) > time.Duration(signEffectiveSeconds * 1e9) { // 签名有效时间
 		RaiseException("rest:request expired", fmt.Sprintf("at [%s] request expired", sign))
 	} else {
-		if strings.ToLower(EncodeMD5(unencryptedStr)) != sign {
+		md5String, err := EncodeMD5(unencryptedStr)
+		PanicNotNilError(err, "rest:sum md5 error", fmt.Sprintf("error md5 string is [%s]", md5String))
+		if strings.ToLower(md5String) != sign {
 			RaiseException("rest:invalid sign", fmt.Sprintf("[%s] is invalid sign", sign))
 		}
 	}

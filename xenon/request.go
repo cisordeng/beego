@@ -121,7 +121,9 @@ func request(method string, service string, resource string, data Map, apiUrls .
 	timestamp := time.Now().UnixNano() / 1e6
 	params.Set("timestamp", fmt.Sprintf("%d", timestamp))
 	var signSecret = beego.AppConfig.String("api::signSecret")
-	sign := strings.ToLower(EncodeMD5(signSecret + params.Encode()))
+	md5String, err := EncodeMD5(signSecret + params.Encode())
+	PanicNotNilError(err, "rest:sum md5 error", fmt.Sprintf("error md5 string is [%s]", md5String))
+	sign := strings.ToLower(md5String)
 	params.Set("sign", sign)
 
 	requestUrl := fmt.Sprintf("%s%s/%s/?%s", apiUrl, service, strings.Replace(resource, ".", "/", -1), params.Encode())

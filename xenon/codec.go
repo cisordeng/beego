@@ -9,11 +9,26 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 )
 
-func EncodeMD5(unencrypted string) string {
-	encrypted := fmt.Sprintf("%x", md5.Sum([]byte(unencrypted)))
-	return encrypted
+func EncodeMD5(unencrypted interface{}) (string, error) {
+	switch t := unencrypted.(type) {
+	case string:
+		return fmt.Sprintf("%x", md5.Sum([]byte(unencrypted.(string)))), nil
+	case multipart.File:
+		file := unencrypted.(multipart.File)
+		defer file.Close()
+		defer file.Seek(0, 0)
+		hash := md5.New()
+		_, err := io.Copy(hash, file)
+		if err != nil {
+			return "", err
+		}
+		return hex.EncodeToString(hash.Sum(nil)), nil
+	default:
+		return "", errors.New(fmt.Sprintf("md5 sum param data type error [%t]", t))
+	}
 }
 
 
