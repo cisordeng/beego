@@ -18,7 +18,6 @@ func EncodeMD5(unencrypted interface{}) (string, error) {
 		return fmt.Sprintf("%x", md5.Sum([]byte(unencrypted.(string)))), nil
 	case multipart.File:
 		file := unencrypted.(multipart.File)
-		defer file.Close()
 		defer file.Seek(0, 0)
 		hash := md5.New()
 		_, err := io.Copy(hash, file)
