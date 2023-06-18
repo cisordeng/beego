@@ -3,6 +3,7 @@ package xenon
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -13,39 +14,39 @@ import (
 )
 
 func Get(service string, resource string, data Map, apiUrls ...string) Map {
-	return request("GET", service, resource, data, apiUrls...)
+	return request("GET", service, resource, data, nil, apiUrls...)
 }
 
-func Put(service string, resource string, data Map, apiUrls ...string) Map {
-	return request("PUT", service, resource, data, apiUrls...)
+func Put(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+	return request("PUT", service, resource, data, body, apiUrls...)
 }
 
-func Post(service string, resource string, data Map, apiUrls ...string) Map {
-	return request("POST", service, resource, data, apiUrls...)
+func Post(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+	return request("POST", service, resource, data, body, apiUrls...)
 }
 
-func Delete(service string, resource string, data Map, apiUrls ...string) Map {
-	return request("DELETE", service, resource, data, apiUrls...)
+func Delete(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+	return request("DELETE", service, resource, data, body, apiUrls...)
 }
 
 
 func GetUrl(url string, data Map, header... Map) Map {
-	return requestUrl("GET", url, data, header...)
+	return requestUrl("GET", url, data, nil, header...)
 }
 
-func PutUrl(url string, data Map, header... Map) Map {
-	return requestUrl("PUT", url, data, header...)
+func PutUrl(url string, data Map, body io.Reader, header... Map) Map {
+	return requestUrl("PUT", url, data, body, header...)
 }
 
-func PostUrl(url string, data Map, header... Map) Map {
-	return requestUrl("POST", url, data, header...)
+func PostUrl(url string, data Map, body io.Reader, header... Map) Map {
+	return requestUrl("POST", url, data, body, header...)
 }
 
-func DeleteUrl(url string, data Map, header... Map) Map {
-	return requestUrl("DELETE", url, data, header...)
+func DeleteUrl(url string, data Map, body io.Reader, header... Map) Map {
+	return requestUrl("DELETE", url, data, body, header...)
 }
 
-func requestUrl(method string, requestUrl string, data Map, header... Map) Map {
+func requestUrl(method string, requestUrl string, data Map, body io.Reader, header... Map) Map {
 
 	params := url.Values{"__source_service": {beego.AppConfig.String("appname")}}
 	for k, v := range data {
@@ -71,7 +72,7 @@ func requestUrl(method string, requestUrl string, data Map, header... Map) Map {
 	requestUrl = fmt.Sprintf("%s?%s", requestUrl, params.Encode())
 	beego.Notice(fmt.Sprintf("request url: %s %s", requestUrl, method))
 
-	request, err := http.NewRequest(method, requestUrl, nil)
+	request, err := http.NewRequest(method, requestUrl, body)
 	PanicNotNilError(err)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36")
@@ -90,7 +91,7 @@ func requestUrl(method string, requestUrl string, data Map, header... Map) Map {
 	return resMap
 }
 
-func request(method string, service string, resource string, data Map, apiUrls ...string) Map {
+func request(method string, service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
 	apiUrl := beego.AppConfig.String("api::apiUrl")
 	if len(apiUrls) > 0 {
 		apiUrl = apiUrls[0]
@@ -129,7 +130,7 @@ func request(method string, service string, resource string, data Map, apiUrls .
 	requestUrl := fmt.Sprintf("%s%s/%s/?%s", apiUrl, service, strings.Replace(resource, ".", "/", -1), params.Encode())
 	beego.Notice(fmt.Sprintf("request url: %s %s", requestUrl, method))
 
-	request, err := http.NewRequest(method, requestUrl, nil)
+	request, err := http.NewRequest(method, requestUrl, body)
 	PanicNotNilError(err)
 	request.Header.Set("Content-Type", "application/json")
 	response, err := http.DefaultClient.Do(request)
