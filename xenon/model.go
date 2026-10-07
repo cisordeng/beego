@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/cisordeng/beego"
 	"github.com/cisordeng/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func init() {
