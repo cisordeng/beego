@@ -156,7 +156,9 @@ func detectTZ(al *alias) {
 			al.Engine = "INNODB"
 		}
 
-	case DRSqlite, DROracle:
+	case DRSqlite:
+
+	case DROracle:
 		al.TZ = time.UTC
 
 	case DRPostgres:
