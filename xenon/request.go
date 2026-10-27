@@ -13,40 +13,75 @@ import (
 	"github.com/cisordeng/beego"
 )
 
-func Get(service string, resource string, data Map, apiUrls ...string) Map {
+type RPCResponse struct {
+	Response *http.Response
+}
+
+func (r *RPCResponse) Reader() io.ReadCloser {
+	return r.Response.Body
+}
+
+func (r *RPCResponse) ToBytes() []byte {
+	bytes, err := ioutil.ReadAll(r.Response.Body)
+	PanicNotNilError(err)
+	return bytes
+}
+
+func (r *RPCResponse) ToText() string {
+	bytes := r.ToBytes()
+	return string(bytes)
+}
+
+func (r *RPCResponse) ToJSON() Map {
+	bytes := r.ToBytes()
+	resMap := Map{}
+	err := json.Unmarshal(bytes, &resMap)
+	PanicNotNilError(err)
+	return resMap
+}
+
+func (r *RPCResponse) toJsonCodeMust200() Map {
+	resMap := r.ToJSON()
+	if int(resMap["code"].(float64)) != 200 {
+		RaiseException(resMap["errCode"].(string), resMap["errMsg"].(string))
+	}
+	return resMap
+}
+
+func Get(service string, resource string, data Map, apiUrls ...string) *RPCResponse {
 	return request("GET", service, resource, data, nil, apiUrls...)
 }
 
-func Put(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+func Put(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
 	return request("PUT", service, resource, data, body, apiUrls...)
 }
 
-func Post(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+func Post(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
 	return request("POST", service, resource, data, body, apiUrls...)
 }
 
-func Delete(service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+func Delete(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
 	return request("DELETE", service, resource, data, body, apiUrls...)
 }
 
 
-func GetUrl(url string, data Map, header... Map) Map {
+func GetUrl(url string, data Map, header... Map) *RPCResponse {
 	return requestUrl("GET", url, data, nil, header...)
 }
 
-func PutUrl(url string, data Map, body io.Reader, header... Map) Map {
+func PutUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
 	return requestUrl("PUT", url, data, body, header...)
 }
 
-func PostUrl(url string, data Map, body io.Reader, header... Map) Map {
+func PostUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
 	return requestUrl("POST", url, data, body, header...)
 }
 
-func DeleteUrl(url string, data Map, body io.Reader, header... Map) Map {
+func DeleteUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
 	return requestUrl("DELETE", url, data, body, header...)
 }
 
-func requestUrl(method string, requestUrl string, data Map, body io.Reader, header... Map) Map {
+func requestUrl(method string, requestUrl string, data Map, body io.Reader, header... Map) *RPCResponse {
 
 	params := url.Values{"__source_service": {beego.AppConfig.String("appname")}}
 	for k, v := range data {
@@ -83,15 +118,10 @@ func requestUrl(method string, requestUrl string, data Map, body io.Reader, head
 	}
 	response, err := http.DefaultClient.Do(request)
 	PanicNotNilError(err)
-	bytes, err := ioutil.ReadAll(response.Body)
-	PanicNotNilError(err)
-	resMap := Map{}
-	err = json.Unmarshal(bytes, &resMap)
-	PanicNotNilError(err)
-	return resMap
+	return &RPCResponse{response}
 }
 
-func request(method string, service string, resource string, data Map, body io.Reader, apiUrls ...string) Map {
+func request(method string, service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
 	apiUrl := beego.AppConfig.String("api::apiUrl")
 	if len(apiUrls) > 0 {
 		apiUrl = apiUrls[0]
@@ -135,13 +165,5 @@ func request(method string, service string, resource string, data Map, body io.R
 	request.Header.Set("Content-Type", "application/json")
 	response, err := http.DefaultClient.Do(request)
 	PanicNotNilError(err)
-	bytes, err := ioutil.ReadAll(response.Body)
-	PanicNotNilError(err)
-	resMap := Map{}
-	err = json.Unmarshal(bytes, &resMap)
-	PanicNotNilError(err)
-	if int(resMap["code"].(float64)) != 200 {
-		RaiseException(resMap["errCode"].(string), resMap["errMsg"].(string))
-	}
-	return resMap
+	return &RPCResponse{response}
 }
