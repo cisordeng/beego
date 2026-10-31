@@ -428,7 +428,7 @@ checkType:
 	}
 
 	// can not set default for these type
-	if fi.auto || fi.pk || fi.unique || fieldType == TypeTimeField || fieldType == TypeDateField || fieldType == TypeDateTimeField {
+	if fi.auto || fi.pk || fi.unique {
 		initial.Clear()
 	}
 

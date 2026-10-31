@@ -17,6 +17,7 @@ package orm
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -129,8 +130,47 @@ func getColumnAddQuery(al *alias, fi *fieldInfo) string {
 	return fmt.Sprintf("ALTER TABLE %s%s%s ADD COLUMN %s%s%s %s %s",
 		Q, fi.mi.table, Q,
 		Q, fi.column, Q,
-		typ, getColumnDefault(fi),
+		typ, getColumnDefault(fi, al),
 	)
+}
+
+// update alter sql string.
+func getColumnUpdateTriggerQuerySqlite3(al *alias, fi *fieldInfo) string {
+	Q := al.DbBaser.TableQuote()
+
+	return fmt.Sprintf("CREATE TRIGGER set_default_%s_%s AFTER INSERT ON %s%s%s WHEN NEW.%s%s%s IS NULL BEGIN UPDATE %s%s%s SET %s%s%s = %s WHERE rowid = NEW.rowid;END;",
+		fi.mi.table,
+		fi.column,
+		Q, fi.mi.table, Q,
+		Q, fi.column, Q,
+		Q, fi.mi.table, Q,
+		Q, fi.column, Q,
+		strings.Replace(getColumnDefault(fi, al), " DEFAULT ", "", 1),
+	)
+}
+
+func isDynamicDefault(val string) bool {
+	if val == "" {
+		return false
+	}
+
+	val = strings.TrimSpace(val)
+	upperVal := strings.ToUpper(val)
+
+	if _, err := strconv.ParseFloat(val, 64); err == nil {
+		return false
+	}
+
+	if upperVal == "TRUE" || upperVal == "FALSE" || upperVal == "NULL" {
+		return false
+	}
+
+	if (strings.HasPrefix(val, "'") && strings.HasSuffix(val, "'")) ||
+		(strings.HasPrefix(val, "\"") && strings.HasSuffix(val, "\"")) {
+		return false
+	}
+
+	return true
 }
 
 // create database creation string.
@@ -183,7 +223,7 @@ func getDbCreateSQL(al *alias) (sqls []string, tableIndexes map[string][]dbIndex
 				//}
 
 				// Append attribute DEFAULT
-				column += getColumnDefault(fi)
+				column += getColumnDefault(fi, al)
 
 				if fi.unique {
 					column += " " + "UNIQUE"
@@ -274,7 +314,7 @@ func getDbCreateSQL(al *alias) (sqls []string, tableIndexes map[string][]dbIndex
 }
 
 // Get string value for the attribute "DEFAULT" for the CREATE, ALTER commands
-func getColumnDefault(fi *fieldInfo) string {
+func getColumnDefault(fi *fieldInfo, al *alias) string {
 	var (
 		v, t, d string
 	)
@@ -289,11 +329,13 @@ func getColumnDefault(fi *fieldInfo) string {
 	// These defaults will be useful if there no config value orm:"default" and NOT NULL is on
 	switch fi.fieldType {
 	case TypeTimeField, TypeDateField, TypeDateTimeField, TypeTextField:
+		t = " DEFAULT %s "
 		if fi.autoNowAdd {
-			t = " DEFAULT %s "
-			d = "now()"
-		} else {
-			return v
+			if al.Driver == DRSqlite {
+				d = "(datetime('now', 'localtime'))"
+			} else {
+				d = "now()"
+			}
 		}
 
 	case TypeBitField, TypeSmallIntegerField, TypeIntegerField,
@@ -321,5 +363,8 @@ func getColumnDefault(fi *fieldInfo) string {
 		}
 	}
 
+	if fi.fieldType == TypeTextField && v == " DEFAULT  " {
+		v = " DEFAULT '' "
+	}
 	return v
 }

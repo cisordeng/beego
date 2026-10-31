@@ -161,6 +161,18 @@ func (d *commandSyncDb) Run() error {
 				if !d.noInfo {
 					fmt.Printf("add column `%s` for table `%s`\n", fi.fullName, mi.table)
 				}
+				if d.al.Driver == DRSqlite && isDynamicDefault(strings.Replace(getColumnDefault(fi, d.al), " DEFAULT ", "", 1)) && (strings.Contains(query, " NOT NULL ") || strings.Contains(query, " DEFAULT ")) {
+					nullIndex := strings.Index(query, " NOT NULL ")
+					defaultIndex := strings.Index(query, " DEFAULT ")
+					if nullIndex >= 0 {
+						query = query[:nullIndex]
+					} else {
+						query = query[:defaultIndex]
+					}
+
+					triggerQuery := getColumnUpdateTriggerQuerySqlite3(d.al, fi)
+					query += fmt.Sprintf(";%s", triggerQuery)
+				}
 
 				_, err := db.Exec(query)
 				if d.verbose {
