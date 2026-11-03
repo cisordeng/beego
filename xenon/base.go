@@ -3,7 +3,7 @@ package xenon
 import "context"
 
 type Entity struct {
-	Ctx   context.Context
+	Ctx context.Context
 }
 
 type Repository struct {
