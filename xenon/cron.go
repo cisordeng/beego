@@ -37,7 +37,7 @@ func newCronTask(name string, spec string, f func(ctx context.Context), enableTx
 }
 
 func (this *CronTask) start() {
-	bCtx := newContextWithOrm()
+	bCtx := NewContextWithOrm()
 
 	f := func() (err error) {
 		defer func() {

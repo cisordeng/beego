@@ -35,7 +35,7 @@ func newCmd(name string, f func(ctx context.Context), enableTx ...bool) *Cmd {
 }
 
 func (this *Cmd) run() {
-	bCtx := newContextWithOrm()
+	bCtx := NewContextWithOrm()
 
 	defer func() {
 		if err := recover(); err != nil {

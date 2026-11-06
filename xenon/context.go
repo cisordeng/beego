@@ -7,7 +7,7 @@ import (
 	"github.com/cisordeng/beego/orm"
 )
 
-func newContextWithOrm() context.Context {
+func NewContextWithOrm() context.Context {
 	dbUsed, _ := beego.AppConfig.Bool("db::DB_USED")
 	if !dbUsed {
 		return nil
