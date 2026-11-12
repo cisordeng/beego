@@ -85,7 +85,7 @@ var (
 )
 
 // Params stores the Params
-type Params map[string]interface{}
+type Params = map[string]interface{}
 
 // ParamsList stores paramslist
 type ParamsList []interface{}

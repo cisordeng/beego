@@ -17,6 +17,7 @@ package orm
 import (
 	"context"
 	"fmt"
+	"reflect"
 )
 
 type colValue struct {
@@ -83,9 +84,19 @@ func (o querySet) Filter(query interface{}, args ...interface{}) QuerySeter {
 		expr := query.(string)
 		o.cond = o.cond.And(expr, args...)
 	} else {
-		conditions := query.(map[string]interface{})
-		for k, v := range conditions {
-			o.cond = o.cond.And(k, v)
+		val := reflect.ValueOf(query)
+		if val.Kind() == reflect.Map {
+			if val.Type().Key().Kind() == reflect.String {
+				keys := val.MapKeys()
+				for _, key := range keys {
+					mapVal := val.MapIndex(key)
+					if mapVal.IsValid() {
+						keyString := key.String()
+						valInterface := mapVal.Interface()
+						o.cond = o.cond.And(keyString, valInterface)
+					}
+				}
+			}
 		}
 	}
 	return &o

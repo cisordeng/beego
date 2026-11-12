@@ -14,9 +14,6 @@ import (
 
 var Resources []RestResourceInterface
 
-type Map = map[string]interface{}
-type FillOption = map[string]bool
-
 type RestResource struct {
 	beego.Controller
 }
