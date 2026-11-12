@@ -1,6 +1,10 @@
 package xenon
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/cisordeng/beego"
+)
 
 type Error struct {
 	InnerErr error
@@ -25,11 +29,13 @@ func depictError(err error, errStr []string) Error {
 }
 
 func RaiseException(errStr ...string) {
+	beego.Error(errStr)
 	panic(depictError(errors.New("raise exception"),  errStr))
 }
 
 func PanicNotNilError(err error, errStr ...string) {
 	if err != nil {
+		beego.Error(err)
 		panic(depictError(err,  errStr))
 	}
 }
