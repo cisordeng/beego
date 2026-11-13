@@ -34,7 +34,7 @@ func RegisterModels() {
 		password := beego.AppConfig.String("db::DB_PASSWORD")
 		charset := beego.AppConfig.String("db::DB_CHARSET")
 		dbURL = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&loc=Asia%%2FShanghai", user, password, host, port, db, charset)
-	case "sqlite3":
+	case "sqlite", "sqlite3":
 		path := beego.AppConfig.String("db::DB_PATH")
 		dbURL = path
 	default:
