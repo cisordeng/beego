@@ -22,6 +22,21 @@ func MustMap(bytes []byte) Map {
 	return data
 }
 
+func ToMaps(bytes []byte) ([]Map, error) {
+	var data []Map
+	err := json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func MustMaps(bytes []byte) []Map {
+	data, err := ToMaps(bytes)
+	PanicNotNilError(err)
+	return data
+}
+
 func (this Map) Clone() Map {
 	return MustMap(this.MustJSON())
 }

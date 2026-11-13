@@ -48,40 +48,40 @@ func (r *RPCResponse) toJsonCodeMust200() Map {
 	return resMap
 }
 
-func Get(service string, resource string, data Map, apiUrls ...string) *RPCResponse {
+func Get(service string, resource string, data Map, apiUrls ...string) (*RPCResponse, error) {
 	return request("GET", service, resource, data, nil, apiUrls...)
 }
 
-func Put(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
+func Put(service string, resource string, data Map, body io.Reader, apiUrls ...string) (*RPCResponse, error) {
 	return request("PUT", service, resource, data, body, apiUrls...)
 }
 
-func Post(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
+func Post(service string, resource string, data Map, body io.Reader, apiUrls ...string) (*RPCResponse, error) {
 	return request("POST", service, resource, data, body, apiUrls...)
 }
 
-func Delete(service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
+func Delete(service string, resource string, data Map, body io.Reader, apiUrls ...string) (*RPCResponse, error) {
 	return request("DELETE", service, resource, data, body, apiUrls...)
 }
 
 
-func GetUrl(url string, data Map, header... Map) *RPCResponse {
+func GetUrl(url string, data Map, header... Map) (*RPCResponse, error) {
 	return requestUrl("GET", url, data, nil, header...)
 }
 
-func PutUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
+func PutUrl(url string, data Map, body io.Reader, header... Map) (*RPCResponse, error) {
 	return requestUrl("PUT", url, data, body, header...)
 }
 
-func PostUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
+func PostUrl(url string, data Map, body io.Reader, header... Map) (*RPCResponse, error) {
 	return requestUrl("POST", url, data, body, header...)
 }
 
-func DeleteUrl(url string, data Map, body io.Reader, header... Map) *RPCResponse {
+func DeleteUrl(url string, data Map, body io.Reader, header... Map) (*RPCResponse, error) {
 	return requestUrl("DELETE", url, data, body, header...)
 }
 
-func requestUrl(method string, requestUrl string, data Map, body io.Reader, header... Map) *RPCResponse {
+func requestUrl(method string, requestUrl string, data Map, body io.Reader, header... Map) (*RPCResponse, error) {
 
 	params := url.Values{"__source_service": {beego.AppConfig.String("appname")}}
 	for k, v := range data {
@@ -108,7 +108,9 @@ func requestUrl(method string, requestUrl string, data Map, body io.Reader, head
 	beego.Notice(fmt.Sprintf("request url: %s %s", requestUrl, method))
 
 	request, err := http.NewRequest(method, requestUrl, body)
-	PanicNotNilError(err)
+	if err != nil {
+		return nil, err
+	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36")
 	if len(header) > 0 {
@@ -117,11 +119,10 @@ func requestUrl(method string, requestUrl string, data Map, body io.Reader, head
 		}
 	}
 	response, err := http.DefaultClient.Do(request)
-	PanicNotNilError(err)
-	return &RPCResponse{response}
+	return &RPCResponse{response}, err
 }
 
-func request(method string, service string, resource string, data Map, body io.Reader, apiUrls ...string) *RPCResponse {
+func request(method string, service string, resource string, data Map, body io.Reader, apiUrls ...string) (*RPCResponse, error) {
 	apiUrl := beego.AppConfig.String("api::apiUrl")
 	if len(apiUrls) > 0 {
 		apiUrl = apiUrls[0]
@@ -161,9 +162,10 @@ func request(method string, service string, resource string, data Map, body io.R
 	beego.Notice(fmt.Sprintf("request url: %s %s", requestUrl, method))
 
 	request, err := http.NewRequest(method, requestUrl, body)
-	PanicNotNilError(err)
+	if err != nil {
+		return nil, err
+	}
 	request.Header.Set("Content-Type", "application/json")
 	response, err := http.DefaultClient.Do(request)
-	PanicNotNilError(err)
-	return &RPCResponse{response}
+	return &RPCResponse{response}, err
 }
