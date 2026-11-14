@@ -37,6 +37,7 @@ func RegisterModels() {
 	case "sqlite", "sqlite3":
 		path := beego.AppConfig.String("db::DB_PATH")
 		dbURL = path
+		maxConn = 1
 	default:
 		beego.Warn(fmt.Sprintf("unknown database driver %s", dbDriver))
 	}
