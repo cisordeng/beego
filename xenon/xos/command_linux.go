@@ -7,6 +7,7 @@ import (
 	"context"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 type Command struct {
@@ -14,11 +15,19 @@ type Command struct {
 }
 
 func NewCommand(name string, arg ...string) *Command {
-	return &Command{exec.Command(name, arg...)}
+	cmd := &Command{exec.Command(name, arg...)}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Pdeathsig: syscall.SIGKILL,
+	}
+	return cmd
 }
 
 func NewCommandContext(ctx context.Context, name string, arg ...string) *Command {
-	return &Command{exec.CommandContext(ctx, name, arg...)}
+	cmd := &Command{exec.CommandContext(ctx, name, arg...)}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Pdeathsig: syscall.SIGKILL,
+	}
+	return cmd
 }
 
 func (this *Command) GetRunOutput() string {
