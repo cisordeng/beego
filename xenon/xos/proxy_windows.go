@@ -6,6 +6,19 @@ import (
 	"fmt"
 )
 
+type SystemProxyConfig struct{
+	Mode string
+	HttpHost string
+	HttpPort int
+	HttpsHost string
+	HttpsPort int
+	FTPHost string
+	FTPPort int
+	SocksHost string
+	SocksPort int
+	AutoconfigUrl string
+}
+
 func SetSystemProxy(httpPort int, socksPort int) error {
 	proxyAddr := fmt.Sprintf("127.0.0.1:%d", httpPort)
 	regPath := `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`
