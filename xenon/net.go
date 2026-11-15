@@ -18,7 +18,7 @@ func GetAvailablePort() int {
 }
 
 func CheckAvailablePort(port int) bool {
-	bindChannel := make(chan bool, 1)
+	availableChannel := make(chan bool, 1)
 	timeout := time.NewTimer(time.Second)
 	expired := false
 	defer timeout.Stop()
@@ -38,20 +38,20 @@ func CheckAvailablePort(port int) bool {
 				time.Sleep(time.Millisecond * 50)
 				goto checkPort
 			}
-			bindChannel <- true
-			close(bindChannel)
+			availableChannel <- false
+			close(availableChannel)
 			return
 		}
-		bindChannel <- false
-		close(bindChannel)
+		availableChannel <- true
+		close(availableChannel)
 		return
 	}()
 
 	select {
-	case bind := <- bindChannel:
-		return bind
+	case available := <- availableChannel:
+		return available
 	case <- timeout.C:
 		expired = true
-		return false
+		return true
 	}
 }
