@@ -35,7 +35,7 @@ func RegisterModels() {
 		charset := beego.AppConfig.String("db::DB_CHARSET")
 		dbURL = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&loc=Asia%%2FShanghai", user, password, host, port, db, charset)
 	case "sqlite", "sqlite3":
-		path := beego.AppConfig.String("db::DB_PATH")
+		path := AbsolutePath(beego.AppConfig.String("db::DB_PATH"))
 		dbURL = path
 		maxConn = 1
 	default:
