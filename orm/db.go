@@ -697,6 +697,20 @@ func (d *dbBase) Delete(q dbQuerier, mi *modelInfo, ind reflect.Value, tz *time.
 // update table-related record by querySet.
 // need querySet not struct reflect.Value to update related records.
 func (d *dbBase) UpdateBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Condition, params Params, tz *time.Location) (int64, error) {
+	// update generate autoNow field
+	for col, fi := range mi.fields.fields {
+		if fi.autoNow {
+			if _, ok := params[col]; !ok {
+				switch fi.fieldType {
+				case TypeTimeField, TypeDateField, TypeDateTimeField, TypeTextField:
+					tnow := time.Now()
+					d.ins.TimeToDB(&tnow, tz)
+					params[col] = tnow
+				}
+			}
+		}
+	}
+
 	columns := make([]string, 0, len(params))
 	values := make([]interface{}, 0, len(params))
 	for col, val := range params {

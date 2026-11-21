@@ -330,7 +330,7 @@ func getColumnDefault(fi *fieldInfo, al *alias) string {
 	switch fi.fieldType {
 	case TypeTimeField, TypeDateField, TypeDateTimeField, TypeTextField:
 		t = " DEFAULT %s "
-		if fi.autoNowAdd {
+		if fi.autoNowAdd || fi.autoNow {
 			if al.Driver == DRSqlite {
 				d = "(datetime('now', 'localtime'))"
 			} else {
