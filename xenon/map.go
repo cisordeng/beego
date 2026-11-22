@@ -37,6 +37,11 @@ func MustMaps(bytes []byte) []Map {
 	return data
 }
 
+func (this Map) Has(key string) bool {
+	_, ok := this[key]
+	return ok
+}
+
 func (this Map) Clone() Map {
 	return MustMap(this.MustJSON())
 }
