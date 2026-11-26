@@ -56,15 +56,19 @@ func GetSystemProxy() *SystemProxyConfig {
 		{"gsettings", "get", "org.gnome.system.proxy", "autoconfig-url"},
 	}
 
-	config.Mode = NewCommand(commands[0][0], commands[0][1:]...).GetRunOutput()
-	config.HttpHost = NewCommand(commands[1][0], commands[1][1:]...).GetRunOutput()
-	config.HttpPort, _ = strconv.Atoi(NewCommand(commands[2][0], commands[2][1:]...).GetRunOutput())
-	config.HttpsHost = NewCommand(commands[3][0], commands[3][1:]...).GetRunOutput()
-	config.HttpsPort, _ = strconv.Atoi(NewCommand(commands[4][0], commands[4][1:]...).GetRunOutput())
-	config.FTPHost = NewCommand(commands[5][0], commands[5][1:]...).GetRunOutput()
-	config.FTPPort, _ = strconv.Atoi(NewCommand(commands[6][0], commands[6][1:]...).GetRunOutput())
-	config.SocksHost = NewCommand(commands[7][0], commands[7][1:]...).GetRunOutput()
-	config.SocksPort, _ = strconv.Atoi(NewCommand(commands[8][0], commands[8][1:]...).GetRunOutput())
-	config.AutoconfigUrl = NewCommand(commands[9][0], commands[9][1:]...).GetRunOutput()
+	config.Mode, _ = NewCommand(commands[0][0], commands[0][1:]...).GetRunOutput()
+	config.HttpHost, _ = NewCommand(commands[1][0], commands[1][1:]...).GetRunOutput()
+	data, _ := NewCommand(commands[2][0], commands[2][1:]...).GetRunOutput()
+	config.HttpPort, _ = strconv.Atoi(data)
+	config.HttpsHost, _ = NewCommand(commands[3][0], commands[3][1:]...).GetRunOutput()
+	data, _ = NewCommand(commands[4][0], commands[4][1:]...).GetRunOutput()
+	config.HttpsPort, _ = strconv.Atoi(data)
+	config.FTPHost, _ = NewCommand(commands[5][0], commands[5][1:]...).GetRunOutput()
+	data, _ = NewCommand(commands[6][0], commands[6][1:]...).GetRunOutput()
+	config.FTPPort, _ = strconv.Atoi(data)
+	config.SocksHost, _ = NewCommand(commands[7][0], commands[7][1:]...).GetRunOutput()
+	data, _ = NewCommand(commands[8][0], commands[8][1:]...).GetRunOutput()
+	config.SocksPort, _ = strconv.Atoi(data)
+	config.AutoconfigUrl, _ = NewCommand(commands[9][0], commands[9][1:]...).GetRunOutput()
 	return &config
 }
