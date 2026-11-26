@@ -130,16 +130,16 @@ func NewCommandContext(ctx context.Context, name string, arg ...string) *Command
 	return cmd
 }
 
-func (this *Command) GetRunOutput() (string, error) {
+func (this *Command) GetRunOutput() string {
 	var outBytes bytes.Buffer
 	var errBytes bytes.Buffer
 	this.Stdout = &outBytes
 	this.Stderr = &errBytes
 	err := this.Run()
 	if err != nil || errBytes.Len() > 0 {
-		return "", err
+		return ""
 	}
-	return strings.Trim(strings.TrimSpace(outBytes.String()), "'"), nil
+	return strings.Trim(strings.TrimSpace(outBytes.String()), "'")
 }
 
 func (this *Command) Start() error {
