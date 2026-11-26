@@ -5,6 +5,7 @@ package xos
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -30,14 +31,17 @@ func NewCommandContext(ctx context.Context, name string, arg ...string) *Command
 	return cmd
 }
 
-func (this *Command) GetRunOutput() string {
+func (this *Command) GetRunOutput() (string, error) {
 	var outBytes bytes.Buffer
 	var errBytes bytes.Buffer
 	this.Stdout = &outBytes
 	this.Stderr = &errBytes
 	err := this.Run()
-	if err != nil || errBytes.Len() > 0 {
-		return ""
+	if err != nil {
+		return "", err
 	}
-	return strings.Trim(strings.TrimSpace(outBytes.String()), "'")
+	if errBytes.Len() > 0 {
+		return "", errors.New(errBytes.String())
+	}
+	return strings.Trim(strings.TrimSpace(outBytes.String()), "'"), nil
 }
